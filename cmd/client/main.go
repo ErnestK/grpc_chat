@@ -17,21 +17,16 @@ var (
 	channelType = flag.String("type", "GROUP", "Channel type: GROUP or DIRECT")
 )
 
-// ... ChatClient struct here (will be updated below)
-
 func main() {
 	flag.Parse()
 
-	// Validate flags
 	if *username == "" {
 		log.Fatalf("username must be provided")
 	}
 
-	// Create a new ChatClient with the provided address, username, and auth token
 	client := NewChatClient(*address, *username, *authToken)
 	defer client.Close()
 
-	// Perform operation based on the provided operation flag
 	switch *op {
 	case "connect":
 		client.Connect()

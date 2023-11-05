@@ -7,23 +7,19 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// Connect creates a message stream for a user
 func (s *Server) Connect(in *pb.User, stream pb.ChatService_ConnectServer) error {
-	// Add the user to the active user list
 	s.messageLock.Lock()
 	if _, exists := s.users[in.Username]; exists {
 		s.messageLock.Unlock()
 		return status.Errorf(codes.AlreadyExists, "user already connected")
 	}
-	s.users[in.Username] = make(chan *pb.ChatMessage, 100) // Just an example buffer size
+	s.users[in.Username] = make(chan *pb.ChatMessage, 100)
 	s.messageLock.Unlock()
 
-	// Start a goroutine to send messages to the client
 	go s.broadcastToUser(in.Username, stream)
 
-	<-stream.Context().Done() // Block until the stream's context is done (client disconnects)
+	<-stream.Context().Done()
 
-	// Clean up after disconnection
 	s.disconnectUser(in.Username)
 
 	return stream.Context().Err()

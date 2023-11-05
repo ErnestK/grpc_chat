@@ -42,12 +42,9 @@ func AuthInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServe
 		return nil, status.Errorf(codes.Unauthenticated, "missing auth token")
 	}
 	username := usernameSlice[0]
-	// Perform your authorization logic here, e.g., checking if the username is valid
-	// For now, we will just check if the username is non-empty
 	if username == "" {
 		return nil, status.Errorf(codes.Unauthenticated, "invalid auth token")
 	}
 
-	// Continue with the handler if authorization is successful
 	return handler(ctx, req)
 }

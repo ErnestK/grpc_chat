@@ -8,7 +8,6 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-// ListChannels lists all users and groups
 func (s *Server) ListChannels(ctx context.Context, in *emptypb.Empty) (*pb.ListChannelsResponse, error) {
 	s.groupLock.RLock()
 	defer s.groupLock.RUnlock()
