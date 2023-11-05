@@ -25,7 +25,6 @@ func (s *Server) broadcastToUser(username string, stream pb.ChatService_ConnectS
 	}
 }
 
-// SendMessage sends a message to a user or a group
 func (s *Server) SendMessage(ctx context.Context, in *pb.Message) (*emptypb.Empty, error) {
 	s.messageLock.Lock()
 	defer s.messageLock.Unlock()
@@ -35,10 +34,17 @@ func (s *Server) SendMessage(ctx context.Context, in *pb.Message) (*emptypb.Empt
 		s.groupLock.RLock()
 		users, ok := s.groups[in.Target]
 		s.groupLock.RUnlock()
+
 		if !ok {
 			return nil, fmt.Errorf("group %s doesn't exist", in.Target)
 		}
 
+		// Record the message in the group's history before broadcasting
+		s.historyLock.Lock() // Ensure thread safety when accessing the history
+		s.messageHistory[in.Target] = append(s.messageHistory[in.Target], &pb.ChatMessage{Sender: in.Sender, Text: in.Text})
+		s.historyLock.Unlock()
+
+		// Broadcast the message to all users in the group
 		for _, username := range users {
 			if userChan, ok := s.users[username]; ok {
 				userChan <- &pb.ChatMessage{Sender: in.Sender, Text: in.Text}
@@ -51,5 +57,6 @@ func (s *Server) SendMessage(ctx context.Context, in *pb.Message) (*emptypb.Empt
 			return nil, fmt.Errorf("user %s doesn't exist", in.Target)
 		}
 	}
+
 	return &emptypb.Empty{}, nil
 }

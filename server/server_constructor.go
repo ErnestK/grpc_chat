@@ -15,16 +15,19 @@ import (
 
 type Server struct {
 	pb.UnimplementedChatServiceServer
-	users       map[string]chan *pb.ChatMessage // Streams for each user
-	groups      map[string][]string             // Group names with user lists
-	groupLock   sync.RWMutex                    // To control concurrent access to groups
-	messageLock sync.Mutex                      // To control concurrent access to message streams
+	users          map[string]chan *pb.ChatMessage // Streams for each user
+	groups         map[string][]string             // Group names with user lists
+	groupLock      sync.RWMutex                    // To control concurrent access to groups
+	messageLock    sync.Mutex                      // To control concurrent access to message streams
+	messageHistory map[string][]*pb.ChatMessage    // Group names with message lists
+	historyLock    sync.RWMutex
 }
 
 func NewServer() *Server {
 	return &Server{
-		users:  make(map[string]chan *pb.ChatMessage),
-		groups: make(map[string][]string),
+		users:          make(map[string]chan *pb.ChatMessage),
+		groups:         make(map[string][]string),
+		messageHistory: make(map[string][]*pb.ChatMessage),
 	}
 }
 

@@ -37,6 +37,17 @@ func (s *Server) JoinGroupChat(ctx context.Context, in *pb.Channel) (*emptypb.Em
 
 	// Add the user to the group
 	s.groups[in.Name] = append(s.groups[in.Name], username)
+
+	go func() {
+		userChan := s.users[username]
+		s.historyLock.RLock()
+		history := s.messageHistory[in.Name]
+		s.historyLock.RUnlock()
+
+		for _, msg := range history {
+			userChan <- msg
+		}
+	}()
 	return &emptypb.Empty{}, nil
 }
 
