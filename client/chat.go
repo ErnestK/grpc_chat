@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"context"
@@ -24,23 +24,6 @@ type ChatClient struct {
 	conn          *grpc.ClientConn
 }
 
-func (c *ChatClient) newAuthContext(parentCtx context.Context) (context.Context, context.CancelFunc) {
-	md := metadata.New(map[string]string{"auth-header": c.username})
-	return metadata.NewOutgoingContext(parentCtx, md), nil
-}
-
-func (c *ChatClient) authenticatedContext() (context.Context, context.CancelFunc) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	md := metadata.New(map[string]string{"auth-header": c.username})
-	return metadata.NewOutgoingContext(ctx, md), cancel
-}
-
-func handleFatalError(operation string, err error) {
-	if err != nil {
-		log.Fatalf("could not %s: %v", operation, err)
-	}
-}
-
 func NewChatClient(address string, username string, authToken string) *ChatClient {
 	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	handleFatalError("connect to server", err)
@@ -58,8 +41,8 @@ func NewChatClient(address string, username string, authToken string) *ChatClien
 }
 
 func (c *ChatClient) Connect() {
-	ctx, cancel := c.newAuthContext(context.Background())
-	defer cancel()
+	md := metadata.New(map[string]string{"auth-header": c.username})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
 	stream, err := c.serviceClient.Connect(ctx, &pb.User{Username: c.username})
 	if err != nil {
@@ -151,5 +134,17 @@ func (c *ChatClient) ListChannels() {
 	fmt.Println("Available channels:")
 	for _, channel := range resp.Channels {
 		fmt.Printf("- %s [%s]\n", channel.Name, channel.Type)
+	}
+}
+
+func (c *ChatClient) authenticatedContext() (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	md := metadata.New(map[string]string{"auth-header": c.username})
+	return metadata.NewOutgoingContext(ctx, md), cancel
+}
+
+func handleFatalError(operation string, err error) {
+	if err != nil {
+		log.Fatalf("could not %s: %v", operation, err)
 	}
 }

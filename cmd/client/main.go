@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 
+	"grpc_chat/client"
 	pb "grpc_chat/proto"
 )
 
@@ -24,7 +25,7 @@ func main() {
 		log.Fatalf("username must be provided")
 	}
 
-	client := NewChatClient(*address, *username, *authToken)
+	client := client.NewChatClient(*address, *username, *authToken)
 	defer client.Close()
 
 	switch *op {
