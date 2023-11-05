@@ -10,7 +10,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type Server struct {
@@ -51,20 +50,4 @@ func AuthInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServe
 
 	// Continue with the handler if authorization is successful
 	return handler(ctx, req)
-}
-
-// ListChannels lists all users and groups
-func (s *Server) ListChannels(ctx context.Context, in *emptypb.Empty) (*pb.ListChannelsResponse, error) {
-	s.groupLock.RLock()
-	defer s.groupLock.RUnlock()
-
-	response := &pb.ListChannelsResponse{}
-
-	for user := range s.users {
-		response.Channels = append(response.Channels, &pb.Channel{Name: user, Type: pb.ChannelType_USER})
-	}
-	for group := range s.groups {
-		response.Channels = append(response.Channels, &pb.Channel{Name: group, Type: pb.ChannelType_GROUP})
-	}
-	return response, nil
 }
