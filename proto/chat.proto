@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package proto;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "/Users/ek/go/grpc_chat/proto/chat.proto;proto";
+
+// Enum to determine the type of channel.
+enum ChannelType {
+    UNKNOWN = 0; // Default value, should not be used.
+    USER = 1;
+    GROUP = 2;
+}
+
+// The chat service definition.
+service ChatService {
+  rpc Connect(User) returns (stream ChatMessage);
+  rpc JoinGroupChat(Channel) returns (google.protobuf.Empty);
+  rpc LeaveGroupChat(Channel) returns (google.protobuf.Empty);
+  rpc CreateGroupChat(Channel) returns (google.protobuf.Empty);
+  rpc SendMessage(Message) returns (google.protobuf.Empty);
+  rpc ListChannels(google.protobuf.Empty) returns (ListChannelsResponse);
+}
+
+
+message User {
+  string username = 1;
+}
+
+message Channel {
+  string name = 1;
+  ChannelType type = 2; // Indicates whether this is a USER channel or a GROUP channel.
+}
+
+message Message {
+  string sender = 1;
+  string target = 2;
+  ChannelType targetType = 3; // Indicates whether the target is a USER or a GROUP.
+  string text = 4;
+}
+
+message ChatMessage {
+  string sender = 1;
+  string text = 2;
+}
+
+message ListChannelsResponse {
+  repeated Channel channels = 1;
+}
