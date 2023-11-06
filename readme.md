@@ -1,3 +1,4 @@
+#### Examples of 1 usecase you caould find in log/log.txt
 ## all commands
 can run all cli commands from bin or from source
 
