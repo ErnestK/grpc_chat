@@ -89,7 +89,7 @@ func (c *ChatClient) JoinGroupChat(channelName string) {
 }
 
 func (c *ChatClient) LeaveGroupChat(channelName string) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := c.authenticatedContext()
 	defer cancel()
 
 	_, err := c.serviceClient.LeaveGroupChat(ctx, &pb.Channel{Name: channelName, Type: pb.ChannelType_GROUP})
